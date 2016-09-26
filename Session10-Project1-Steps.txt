@@ -1,0 +1,108 @@
+Dataset Description:
+
+ID
+Case Number
+Date
+Block
+IUCR
+Primary Type
+Description
+Location Description
+Arrest
+Domestic
+Beat
+District
+Ward
+Community Area
+FBICode
+X Coordinate
+Y Coordinate
+Year
+Updated On
+Latitude
+Longitude
+Location
+
+To execute the below scripts
+
+pig -x local /home/acadgild/Assignment-session10/project1_1_1.pig
+pig -x local /home/acadgild/Assignment-session10/project1_1_2.pig
+pig -x local /home/acadgild/Assignment-session10/project1_1_3.pig
+pig -x local /home/acadgild/Assignment-session10/project1_1_4.pig
+
+
+************************************************************************************************************************
+------------------------------------------------------------------------------------------------------------------------
+(A) Write a mapreduce/pig program to calculate the number of cases investigated under each FBI code.
+------------------------------------------------------------------------------------------------------------------------
+
+CrimeRecords = LOAD '/home/acadgild/Assignment-session10/Crimes.csv' USING PigStorage(',') AS (ID:long, CaseNo:chararray, DatenTime:chararray, Block:chararray, IUCR:int, PrimaryType:chararray, Description:chararray, Location:chararray, Arrest:chararray, Domestic:chararray, Beat:int, District:int, Ward:int, CommunityArea:chararray, FBICode:chararray, XCoordinate:float, YCoordinate:float, Year:int, UpdatedOnTime:chararray, Latitude:double, Longitude:double, GeoLocation:chararray) ;
+
+Data1 = FOREACH CrimeRecords GENERATE ID, FBICode ;
+
+DataGrp  = GROUP Data1 BY FBICode ;
+
+NumOfCases = FOREACH DataGrp GENERATE group, COUNT(Data1.ID) ;
+
+DUMP NumOfCases;
+
+************************************************************************************************************************
+
+************************************************************************************************************************
+------------------------------------------------------------------------------------------------------------------------
+(B) Write a mapreduce/pig program to calculate the number of cases investigated under FBI code 32. 
+------------------------------------------------------------------------------------------------------------------------
+
+CrimeRecords = LOAD '/home/acadgild/Assignment-session10/Crimes_-_2001_to_present.csv' USING PigStorage(',') AS (ID:long, CaseNo:chararray, DatenTime:chararray, Block:chararray, IUCR:int, PrimaryType:chararray, Description:chararray, Location:chararray, Arrest:chararray, Domestic:chararray, Beat:int, District:int, Ward:int, CommunityArea:chararray, FBICode:chararray, XCoordinate:float, YCoordinate:float, Year:int, UpdatedOnTime:chararray, Latitude:double, Longitude:double, GeoLocation:chararray) ;
+
+Data1 = FOREACH CrimeRecords GENERATE ID, FBICode ;
+
+Data2 = FILTER Data1 BY FBICode == '32' ;
+
+DataGrp  = GROUP Data2 BY FBICode ;
+
+NumOfCases = FOREACH DataGrp GENERATE group, COUNT(Data2.ID) ;
+
+DUMP NumOfCases ;
+
+************************************************************************************************************************
+
+************************************************************************************************************************
+------------------------------------------------------------------------------------------------------------------------
+(C) Write a mapreduce/pig program to calculate the number of arrests in theft district wise.
+------------------------------------------------------------------------------------------------------------------------
+
+CrimeRecords = LOAD '/home/acadgild/Assignment-session10/Crimes_-_2001_to_present.csv' USING PigStorage(',') AS (ID:long, CaseNo:chararray, DatenTime:chararray, Block:chararray, IUCR:int, PrimaryType:chararray, Description:chararray, Location:chararray, Arrest:chararray, Domestic:chararray, Beat:int, District:int, Ward:int, CommunityArea:chararray, FBICode:chararray, XCoordinate:float, YCoordinate:float, Year:int, UpdatedOnTime:chararray, Latitude:double, Longitude:double, GeoLocation:chararray) ;
+
+Data1 = FOREACH CrimeRecords GENERATE ID, PrimaryType, Arrest, District ;
+
+Data2 = FILTER Data1 BY PrimaryType == 'THEFT' AND Arrest =='true' ;
+
+DataGrp = GROUP Data2 BY District ;
+
+NumOfArrests = FOREACH DataGrp GENERATE group, COUNT(Data2.ID) ;
+
+DUMP NumOfArrests;
+
+************************************************************************************************************************
+
+************************************************************************************************************************
+------------------------------------------------------------------------------------------------------------------------
+(D) Write a mapreduce/pig program to calculate the number of arrests done between october 2014 and october 2015. 
+------------------------------------------------------------------------------------------------------------------------
+
+CrimeRecords = LOAD '/home/acadgild/Assignment-session10/Crimes_-_2001_to_present.csv' USING PigStorage(',') AS (ID:long, CaseNo:chararray, DatenTime:chararray, Block:chararray, IUCR:int, PrimaryType:chararray, Description:chararray, Location:chararray, Arrest:chararray, Domestic:chararray, Beat:int, District:int, Ward:int, CommunityArea:chararray, FBICode:chararray, XCoordinate:float, YCoordinate:float, Year:int, UpdatedOnTime:chararray, Latitude:double, Longitude:double, GeoLocation:chararray) ;
+
+Data1 = FOREACH CrimeRecords GENERATE Arrest, (int)SUBSTRING(DatenTime, 0, 2) AS mo, (int)SUBSTRING(DatenTime, 6, 10) AS yr;
+
+Data2 = FILTER Data1 BY ((mo >= 10 AND yr == 2014) OR (mo <= 10 AND yr == 2015)) AND Arrest =='true' ;
+
+DataGrp  = GROUP Data2 ALL ;
+
+NumOfArrests = FOREACH DataGrp GENERATE COUNT(Data2) ;
+
+DUMP NumOfArrests ;
+
+************************************************************************************************************************
+
+
